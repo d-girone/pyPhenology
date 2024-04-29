@@ -42,8 +42,51 @@ class ThermalTime(BaseModel):
                                'predictors': ['temperature', 'doy_series']}
 
     def _apply_model(self, temperature, doy_series, t1, T, F):
+        """
         # Temperature threshold
         temperature[temperature < T] = 0
+
+        # Only accumulate forcing after t1
+        temperature[doy_series < t1] = 0
+
+        accumulated_gdd = utils.transforms.forcing_accumulator(temperature)
+        """
+        # Temperature threshold
+        gdd=temperature-T
+        gdd[gdd<0]=0
+
+        # Only accumulate forcing after t1
+        gdd[doy_series < t1] = 0
+
+        accumulated_gdd = utils.transforms.forcing_accumulator(gdd)
+
+        return utils.transforms.doy_estimator(forcing=accumulated_gdd,
+                                              doy_series=doy_series,
+                                              threshold=F)
+
+
+class ThermalTime_sinwave(BaseModel):
+
+    """
+    as above, so below
+    """
+
+    def __init__(self, parameters={}):
+        BaseModel.__init__(self)
+        self.all_required_parameters = {'t1': (-67, 298), 'T': (-25, 25), 'F': (0, 1000)}
+        self._organize_parameters(parameters)
+        self._required_data = {'predictor_columns': ['site_id', 'year', 'doy', 'temperature_min','temperature_max'],
+                               'predictors': ['temperature_min','temperature_max', 'doy_series']}
+
+    def _apply_model(self, T_min, T_max, doy_series, t1, T, F):
+        # Temperature threshold
+        temperature = ((T_max + T_min)/2)
+        temperature[T_max < T] = 0        
+
+        alpha = (T_max[i] - T_min[i])/2
+        theta = ((T - temperature)/alpha)
+        wave_gdd = [(1/np.pi) * ((temp[x] - T) * ((np.pi/2) - np.arcsin(theta[x])) + (dT[x]*np.cos(np.arcsin(theta[x])))) for x in np.where(~np.logical_or(T_max<T,T_min>T))]
+        temperature[~np.logical_or(T_max<T,T_min>T)] = wave_gdd[0]+T
 
         # Only accumulate forcing after t1
         temperature[doy_series < t1] = 0
@@ -53,6 +96,8 @@ class ThermalTime(BaseModel):
         return utils.transforms.doy_estimator(forcing=accumulated_gdd,
                                               doy_series=doy_series,
                                               threshold=F)
+
+
 
 class M1(BaseModel):
     """The Thermal Time Model with a daylength correction.
