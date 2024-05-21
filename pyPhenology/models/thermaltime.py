@@ -75,11 +75,13 @@ class ThermalTime_sinwave(BaseModel):
         BaseModel.__init__(self)
         self.all_required_parameters = {'t1': (-67, 298), 'T': (-25, 25), 'F': (0, 1000)}
         self._organize_parameters(parameters)
-        self._required_data = {'predictor_columns': ['site_id', 'year', 'doy', 'temperature', 'temperature_min', 'temperature_max'],
-                               'predictors': ['temperature','temperature_min','temperature_max', 'doy_series']}
+        self._required_data = {'predictor_columns': ['site_id', 'year', 'doy', 'temperature_min', 'temperature_max'],
+                               'predictors': ['temperature_min','temperature_max', 'doy_series']}
 
-    def _apply_model(self, T_min, T_max, doy_series, t1, T, F):
+    def _apply_model(self, temperature_min, temperature_max, doy_series, t1, T, F):
         # Temperature threshold
+        T_max = temperature_max
+        T_min = temperature_min
         temp = ((T_max + T_min)/2)
 
         alpha = (T_max[i] - T_min[i])/2
