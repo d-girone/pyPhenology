@@ -80,18 +80,20 @@ class ThermalTime_sinwave(BaseModel):
 
     def _apply_model(self, T_min, T_max, doy_series, t1, T, F):
         # Temperature threshold
-        temperature = ((T_max + T_min)/2)
-        temperature[T_max < T] = 0        
+        temp = ((T_max + T_min)/2)
 
         alpha = (T_max[i] - T_min[i])/2
-        theta = ((T - temperature)/alpha)
-        wave_gdd = [(1/np.pi) * ((temp[x] - T) * ((np.pi/2) - np.arcsin(theta[x])) + (dT[x]*np.cos(np.arcsin(theta[x])))) for x in np.where(~np.logical_or(T_max<T,T_min>T))]
-        temperature[~np.logical_or(T_max<T,T_min>T)] = wave_gdd[0]+T
+        theta = ((T - temp)/alpha)
+        wave_gdd = [(1/np.pi) * ((temp[x] - T) * ((np.pi/2) - np.arcsin(theta[x])) + (alpha[x]*np.cos(np.arcsin(theta[x])))) for x in np.where(~np.logical_or(T_max<T,T_min>T))]
+        
+        gdd = temp-T
+        gdd[T_max<T] = 0
+        gdd[~np.logical_or(T_max<T,T_min>T)] = wave_gdd[0]
 
         # Only accumulate forcing after t1
-        temperature[doy_series < t1] = 0
+        gdd[doy_series < t1] = 0
 
-        accumulated_gdd = utils.transforms.forcing_accumulator(temperature)
+        accumulated_gdd = utils.transforms.forcing_accumulator(gdd)
 
         return utils.transforms.doy_estimator(forcing=accumulated_gdd,
                                               doy_series=doy_series,
