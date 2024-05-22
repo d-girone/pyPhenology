@@ -151,7 +151,8 @@ class BaseModel():
             raise TypeError('Invalid arguments. to_predict and predictors ' +
                             'must both be pandas dataframes of new data to predict,' +
                             'or set to None to predict the data used for fitting')
-
+        
+        print(predictors)
         predictions = self._apply_model(**deepcopy(predictors),
                                         **self._fitted_params)
 
