@@ -182,11 +182,11 @@ class BaseModel():
         if for_prediction:
             if 'temperature_max' in predictors and 'temperature_min' in predictors:
                 predictors = dict()
-                for temp_name in ['temperature_min','temperature_max','temperature']:
+                for t in ['temperature_min','temperature_max','temperature']:
                     predictors[temp_name],predictor['doy_series'] = utils.misc.temperature_only_data_prep(observations,
                                                                                         predictors,
                                                                                         for_prediction=for_prediction,
-                                                                                        temp_name=temp_name)
+                                                                                        temp_name=t)
                 return predictors
 
 
