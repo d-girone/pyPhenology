@@ -84,7 +84,7 @@ class ThermalTime_sinwave(BaseModel):
         T_min = temperature_min
         temp = ((T_max + T_min)/2)
 
-        alpha = (T_max[i] - T_min[i])/2
+        alpha = (T_max - T_min)/2
         theta = ((T - temp)/alpha)
         wave_gdd = [(1/np.pi) * ((temp[x] - T) * ((np.pi/2) - np.arcsin(theta[x])) + (alpha[x]*np.cos(np.arcsin(theta[x])))) for x in np.where(~np.logical_or(T_max<T,T_min>T))]
         
