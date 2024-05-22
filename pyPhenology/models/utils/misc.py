@@ -44,8 +44,6 @@ def temperature_only_data_prep(observations, predictors, for_prediction=False,
 
     """
     temp_name = kwargs.get('temp_name','temperature')
-    print(temp_name)
-    print(type(predictors))
     predictors = predictors[['doy', 'site_id', 'year', temp_name]].copy()
     doy_series = predictors.doy.dropna().unique()
     doy_series.sort()
