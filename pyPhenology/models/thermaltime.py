@@ -90,7 +90,7 @@ class ThermalTime_sinwave(BaseModel):
         
         gdd = temp-T
         gdd[T_max<T] = 0
-        gdd[~np.logical_or(T_max<T,T_min>T)] = wave_gdd[0]
+        gdd[~np.logical_or(T_max<T,T_min>T)] = wave_gdd[0].T
 
         # Only accumulate forcing after t1
         gdd[doy_series < t1] = 0
