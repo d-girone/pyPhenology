@@ -4,7 +4,7 @@ from warnings import warn
 
 
 def temperature_only_data_prep(observations, predictors, for_prediction=False,
-                               verbose=True):
+                               verbose=True,**kwargs):
     """Create a numpy array of shape (a,b), where b
     is equal to the sample size in observations, and a is
     equal to the number of days in the yearly time
@@ -43,10 +43,11 @@ def temperature_only_data_prep(observations, predictors, for_prediction=False,
         (ie. doy 0 = Jan 1)
 
     """
-    predictors = predictors[['doy', 'site_id', 'year', 'temperature']].copy()
+    temp_name = kwargs.get('temp_name','temperature')
+    predictors = predictors[['doy', 'site_id', 'year', temp_name]].copy()
     doy_series = predictors.doy.dropna().unique()
     doy_series.sort()
-    predictors = predictors.pivot_table(index=['site_id', 'year'], columns='doy', values='temperature').reset_index()
+    predictors = predictors.pivot_table(index=['site_id', 'year'], columns='doy', values=temp_name).reset_index()
 
     # This first and last day of temperature data can causes NA issues because
     # of leap years.If thats the case try dropping them
@@ -82,6 +83,7 @@ def temperature_only_data_prep(observations, predictors, for_prediction=False,
              '\n Missing data from: \n' + str(missing_info))
 
     temperature_array = obs_with_temp[doy_series].values.T
+    temperature_min_array = obs_with_temp[doy_series].values.T
 
     if for_prediction:
         return temperature_array, doy_series

@@ -152,7 +152,6 @@ class BaseModel():
                             'must both be pandas dataframes of new data to predict,' +
                             'or set to None to predict the data used for fitting')
         
-        print(predictors)
         predictions = self._apply_model(**deepcopy(predictors),
                                         **self._fitted_params)
 
@@ -181,11 +180,22 @@ class BaseModel():
         Models which have other predictors have their own _organize_predictors() method.
         """
         if for_prediction:
-            temperature_fitting, doy_series = utils.misc.temperature_only_data_prep(observations,
-                                                                                    predictors,
-                                                                                    for_prediction=for_prediction)
-            return {'temperature': temperature_fitting,
-                    'doy_series': doy_series}
+            if 'temperature_max' in predictors and 'temperature_min' in predictors:
+                predictors = dict()
+                for temp_name in ['temperature_min','temperature_max','temperature']:
+                    predictors[temp_name],predictor['doy_series'] = utils.misc.temperature_only_data_prep(observations,
+                                                                                        predictors,
+                                                                                        for_prediction=for_prediction,
+                                                                                        temp_name=temp_name)
+                return predictors
+
+
+            else:
+                temperature_fitting, doy_series = utils.misc.temperature_only_data_prep(observations,
+                                                                                        predictors,
+                                                                                        for_prediction=for_prediction)
+                return {'temperature': temperature_fitting,
+                        'doy_series': doy_series}
         else:
             cleaned_observations, temperature_fitting, doy_series = utils.misc.temperature_only_data_prep(observations,
                                                                                                           predictors,
