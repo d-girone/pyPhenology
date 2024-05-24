@@ -80,8 +80,8 @@ class ThermalTime_sinwave(BaseModel):
 
     def _apply_model(self, temperature, temperature_min, temperature_max, doy_series, t1, T, F):
         # Temperature threshold
-        T_max = temperature_max
-        T_min = temperature_min
+        T_max = temperature_max.T
+        T_min = temperature_min.T
         temp = ((T_max + T_min)/2)
 
         alpha = (T_max - T_min)/2
@@ -90,14 +90,14 @@ class ThermalTime_sinwave(BaseModel):
         
         gdd = temp-T
         gdd[T_max<T] = 0
-        gdd[~np.logical_or(T_max<T,T_min>T)] = wave_gdd[0].T
+        gdd[~np.logical_or(T_max<T,T_min>T)] = wave_gdd[0]
 
         # Only accumulate forcing after t1
         gdd[doy_series < t1] = 0
 
         accumulated_gdd = utils.transforms.forcing_accumulator(gdd)
 
-        return utils.transforms.doy_estimator(forcing=accumulated_gdd,
+        return utils.transforms.doy_estimator(forcing=accumulated_gdd.T,
                                               doy_series=doy_series,
                                               threshold=F)
 
