@@ -95,9 +95,9 @@ class ThermalTime_sinwave(BaseModel):
         # Only accumulate forcing after t1
         gdd[doy_series < t1] = 0
 
-        accumulated_gdd = utils.transforms.forcing_accumulator(gdd)
+        accumulated_gdd = utils.transforms.forcing_accumulator(np.array(gdd).T)
 
-        return utils.transforms.doy_estimator(forcing=[accumulated_gdd].T,
+        return utils.transforms.doy_estimator(forcing=accumulated_gdd,
                                               doy_series=doy_series,
                                               threshold=F)
 
