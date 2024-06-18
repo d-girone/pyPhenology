@@ -89,14 +89,16 @@ class ThermalTime_sinwave(BaseModel):
         #wave_gdd = [(1/np.pi) * ((temp[x] - T) * ((np.pi/2) - np.arcsin(theta[x])) + (alpha[x]*np.cos(np.arcsin(theta[x])))) for x in np.where(~np.logical_or(T_max<T,T_min>T))]
         gdd = (1/np.pi) * ((temp - T) * ((np.pi/2) - np.arcsin(theta)) + (alpha*np.cos(np.arcsin(theta))))
         
-        gdd[T_min>T] = (temp-T)[T_min>T]
-        gdd[T_max<T] = 0
+        gdd[T_min>=T] = (temp-T)[T_min>=T]
+        gdd[T_max<=T] = 0
+        if np.any(gdd<0):
+            print("###|ERROR: Negative GDD value found|###")
         #gdd[~np.logical_or(T_max<T,T_min>T)] = wave_gdd[0]
 
         # Only accumulate forcing after t1
         gdd[doy_series < t1] = 0
 
-        accumulated_gdd = utils.transforms.forcing_accumulator(np.array(gdd))
+        accumulated_gdd = utils.transforms.forcing_accumulator(gdd)
 
         return utils.transforms.doy_estimator(forcing=accumulated_gdd,
                                               doy_series=doy_series,
