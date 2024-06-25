@@ -197,12 +197,24 @@ class BaseModel():
                 return {'temperature': temperature_fitting,
                         'doy_series': doy_series}
         else:
-            cleaned_observations, temperature_fitting, doy_series = utils.misc.temperature_only_data_prep(observations,
-                                                                                                          predictors,
-                                                                                                          for_prediction=for_prediction)
-            self.fitting_predictors = {'temperature': temperature_fitting,
-                                       'doy_series': doy_series}
-            self.obs_fitting = cleaned_observations
+            if 'temperature_max' in predictors and 'temperature_min' in predictors:
+                pre_dict = dict()
+                for temp_name in ['temperature_min','temperature_max','temperature']:
+                    cleaned_observations,pre_dict[temp_name],pre_dict['doy_series'] = utils.misc.temperature_only_data_prep(observations,
+                                                                                        predictors,
+                                                                                        for_prediction=for_prediction,
+                                                                                        temp_name=temp_name)
+                self.fitting_predictors=pre_dict
+                self.obs_fitting = cleaned_observations
+            
+            else:
+                cleaned_observations, temperature_fitting, doy_series = utils.misc.temperature_only_data_prep(observations,
+                                                                                                              predictors,
+                                                                                                              for_prediction=for_prediction)
+                self.fitting_predictors = {'temperature': temperature_fitting,
+                                        'doy_series': doy_series}
+            
+                self.obs_fitting = cleaned_observations
 
     def _validate_formatted_predictors(self, predictors):
         """Make sure everything is valid.
